@@ -1,0 +1,580 @@
+{
+  "$schema": "acc-workshop/ui-flow/1.0",
+  "meta": {
+    "app": "ACC Empathy Workshop",
+    "version": "1.0",
+    "generatedFrom": "src/App.jsx, src/main.jsx, src/preview/Preview.jsx",
+    "description": "Structural UI flow seed for human-readable diagrams. Two URL routes; role and board navigation use in-app state plus shared storage sync.",
+    "routingModel": {
+      "urlRouter": "react-router-dom (BrowserRouter)",
+      "inAppRouter": "React useState view in ACCWorkshop",
+      "crossDeviceSync": "window.storage (Supabase or localStorage + BroadcastChannel), polled every 3s"
+    }
+  },
+  "entryPoints": [
+    {
+      "id": "ep-root",
+      "path": "/",
+      "method": "GET",
+      "role": "both",
+      "resolvesTo": "landing",
+      "description": "Default workshop app bootstrap via index.html → main.jsx → App.jsx"
+    },
+    {
+      "id": "ep-participant-deeplink",
+      "path": "/",
+      "query": { "role": "participant" },
+      "role": "participant",
+      "resolvesTo": "participant-shell",
+      "description": "QR code and manual phone join; skips landing"
+    },
+    {
+      "id": "ep-facilitator-deeplink",
+      "path": "/",
+      "query": { "role": "facilitator" },
+      "role": "facilitator",
+      "resolvesTo": "facilitator-shell",
+      "description": "Direct facilitator entry; skips landing"
+    },
+    {
+      "id": "ep-room",
+      "path": "/",
+      "query": { "room": "<name>" },
+      "role": "both",
+      "resolvesTo": null,
+      "description": "Storage namespace isolation; composable with role query params"
+    },
+    {
+      "id": "ep-preview",
+      "path": "/preview",
+      "role": "dev",
+      "resolvesTo": "preview-canvas",
+      "description": "Hi-fi design canvas with side-by-side participant phone and facilitator projector frames"
+    }
+  ],
+  "boards": [
+    { "id": "empathy", "en": "Empathy Maps", "zh": "同理心地圖", "storageKey": "acc-active-board", "stickyKey": "acc-stickies-empathy" },
+    { "id": "parking", "en": "Parking Lot", "zh": "暫存區", "storageKey": "acc-active-board", "stickyKey": "acc-stickies-parking-lot" },
+    { "id": "reflections", "en": "Reflections", "zh": "反思", "storageKey": "acc-active-board", "stickyKey": "acc-stickies-reflections" },
+    { "id": "practices", "en": "Practice Proposals", "zh": "實踐提案", "storageKey": "acc-active-board", "stickyKey": "acc-stickies-practices" },
+    { "id": "commitments", "en": "Commitments", "zh": "個人承諾", "storageKey": "acc-active-board", "stickyKey": "acc-stickies-commitments" }
+  ],
+  "nodes": [
+    {
+      "id": "bootstrap",
+      "type": "system",
+      "role": "both",
+      "label": "App bootstrap",
+      "component": "main.jsx",
+      "layer": "infrastructure"
+    },
+    {
+      "id": "landing",
+      "type": "screen",
+      "role": "both",
+      "label": "Landing · Role chooser",
+      "labelZh": "選擇角色",
+      "component": "Landing",
+      "layer": "top-level",
+      "description": "Full-screen hero with two role cards"
+    },
+    {
+      "id": "participant-shell",
+      "type": "shell",
+      "role": "participant",
+      "label": "Participant app shell",
+      "component": "ParticipantApp",
+      "layer": "top-level",
+      "layout": ["sticky-header", "board-flow-main", "fixed-parking-fab"]
+    },
+    {
+      "id": "facilitator-shell",
+      "type": "shell",
+      "role": "facilitator",
+      "label": "Facilitator app shell",
+      "component": "FacilitatorApp",
+      "layer": "top-level",
+      "layout": ["sticky-header-with-board-tabs", "scrollable-board-main"]
+    },
+    {
+      "id": "preview-canvas",
+      "type": "screen",
+      "role": "dev",
+      "label": "Preview canvas",
+      "component": "Preview",
+      "layer": "top-level",
+      "description": "Dual framed live App instances auto-entering each role"
+    },
+    {
+      "id": "centered-loader",
+      "type": "gate",
+      "role": "both",
+      "label": "Connecting / Loading",
+      "component": "CenteredLoader",
+      "layer": "gate",
+      "description": "Shown during initial storage poll or facilitator lock check"
+    },
+    {
+      "id": "fac-lock-pending",
+      "type": "gate",
+      "role": "facilitator",
+      "label": "Facilitator lock · pending",
+      "component": "FacilitatorLockModal",
+      "layer": "gate",
+      "mode": "pending"
+    },
+    {
+      "id": "fac-lock-displaced",
+      "type": "overlay",
+      "role": "facilitator",
+      "label": "Facilitator lock · displaced",
+      "component": "FacilitatorLockModal",
+      "layer": "gate",
+      "mode": "displaced"
+    },
+    {
+      "id": "fac-board-empathy",
+      "type": "board",
+      "role": "facilitator",
+      "label": "Empathy Maps board",
+      "component": "EmpathyBoard",
+      "boardId": "empathy",
+      "layer": "facilitator-board"
+    },
+    {
+      "id": "fac-board-empathy-grid",
+      "type": "subview",
+      "role": "facilitator",
+      "label": "Empathy · Gallery (8 personas)",
+      "parent": "fac-board-empathy",
+      "layer": "facilitator-board"
+    },
+    {
+      "id": "fac-board-empathy-focus",
+      "type": "subview",
+      "role": "facilitator",
+      "label": "Empathy · Focus (1 persona)",
+      "parent": "fac-board-empathy",
+      "layer": "facilitator-board"
+    },
+    {
+      "id": "fac-board-parking",
+      "type": "board",
+      "role": "facilitator",
+      "label": "Parking Lot board",
+      "component": "SimpleBoard",
+      "boardId": "parking",
+      "layer": "facilitator-board"
+    },
+    {
+      "id": "fac-board-reflections",
+      "type": "board",
+      "role": "facilitator",
+      "label": "Reflections board",
+      "component": "SimpleBoard",
+      "boardId": "reflections",
+      "layer": "facilitator-board"
+    },
+    {
+      "id": "fac-board-practices",
+      "type": "board",
+      "role": "facilitator",
+      "label": "Practice Proposals board",
+      "component": "PracticesBoard",
+      "boardId": "practices",
+      "layer": "facilitator-board"
+    },
+    {
+      "id": "fac-board-commitments",
+      "type": "board",
+      "role": "facilitator",
+      "label": "Commitments board",
+      "component": "SimpleBoard",
+      "boardId": "commitments",
+      "layer": "facilitator-board"
+    },
+    {
+      "id": "fac-qr-panel",
+      "type": "modal",
+      "role": "facilitator",
+      "label": "QR · Scan to join",
+      "component": "QRPanel",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-big-prompt",
+      "type": "modal",
+      "role": "facilitator",
+      "label": "Big prompt (projector intro)",
+      "component": "BigPrompt",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-agenda-timer",
+      "type": "popover",
+      "role": "facilitator",
+      "label": "Agenda timer",
+      "component": "AgendaTimer",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-settings",
+      "type": "modal",
+      "role": "facilitator",
+      "label": "Settings",
+      "component": "SettingsPanel",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-settings-personas",
+      "type": "tab",
+      "role": "facilitator",
+      "label": "Settings · Personas",
+      "parent": "fac-settings",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-persona-editor",
+      "type": "subview",
+      "role": "facilitator",
+      "label": "Persona editor",
+      "component": "PersonaEditor",
+      "parent": "fac-settings-personas",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-settings-move",
+      "type": "tab",
+      "role": "facilitator",
+      "label": "Settings · Move stickies",
+      "parent": "fac-settings",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-settings-export",
+      "type": "tab",
+      "role": "facilitator",
+      "label": "Settings · Print / Export",
+      "parent": "fac-settings",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "fac-print-view",
+      "type": "external",
+      "role": "facilitator",
+      "label": "Print / PDF export",
+      "component": "ExportPanel",
+      "layer": "facilitator-overlay",
+      "description": "Opens new browser tab via window.open + print()"
+    },
+    {
+      "id": "fac-settings-clear",
+      "type": "tab",
+      "role": "facilitator",
+      "label": "Settings · Clear data",
+      "parent": "fac-settings",
+      "layer": "facilitator-overlay"
+    },
+    {
+      "id": "part-flow-empathy",
+      "type": "flow",
+      "role": "participant",
+      "label": "Empathy flow",
+      "component": "EmpathyFlow",
+      "boardId": "empathy",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-empathy-persona",
+      "type": "step",
+      "role": "participant",
+      "label": "Empathy · Step 1 · Pick persona",
+      "parent": "part-flow-empathy",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-empathy-compose",
+      "type": "step",
+      "role": "participant",
+      "label": "Empathy · Step 2 · Quadrant + sticky",
+      "parent": "part-flow-empathy",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-flow-simple-parking",
+      "type": "flow",
+      "role": "participant",
+      "label": "Parking Lot prompt flow",
+      "component": "SimpleFlow",
+      "boardId": "parking",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-flow-simple-reflections",
+      "type": "flow",
+      "role": "participant",
+      "label": "Reflections prompt flow",
+      "component": "SimpleFlow",
+      "boardId": "reflections",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-flow-practices",
+      "type": "flow",
+      "role": "participant",
+      "label": "Practice proposals flow",
+      "component": "PracticesFlow",
+      "boardId": "practices",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-practices-column",
+      "type": "step",
+      "role": "participant",
+      "label": "Practices · Step 1 · Pick column",
+      "parent": "part-flow-practices",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-practices-write",
+      "type": "step",
+      "role": "participant",
+      "label": "Practices · Step 2 · Write proposal",
+      "parent": "part-flow-practices",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-flow-simple-commitments",
+      "type": "flow",
+      "role": "participant",
+      "label": "Commitments prompt flow",
+      "component": "SimpleFlow",
+      "boardId": "commitments",
+      "layer": "participant-board"
+    },
+    {
+      "id": "part-parking-overlay",
+      "type": "overlay",
+      "role": "participant",
+      "label": "Parking lot overlay",
+      "component": "ParkingOverlay",
+      "layer": "participant-overlay",
+      "description": "Available from any board via bottom FAB"
+    },
+    {
+      "id": "part-sample-overlay",
+      "type": "modal",
+      "role": "participant",
+      "label": "Sample empathy map",
+      "component": "SampleOverlay",
+      "layer": "participant-overlay"
+    },
+    {
+      "id": "part-posted-modal",
+      "type": "modal",
+      "role": "participant",
+      "label": "Posted confirmation",
+      "component": "PostedModal",
+      "layer": "participant-overlay"
+    }
+  ],
+  "edges": [
+    { "from": "bootstrap", "to": "landing", "trigger": "Navigate to / with no role query", "triggerType": "deep-link", "roles": ["both"] },
+    { "from": "bootstrap", "to": "participant-shell", "trigger": "?role=participant", "triggerType": "deep-link", "roles": ["participant"] },
+    { "from": "bootstrap", "to": "facilitator-shell", "trigger": "?role=facilitator", "triggerType": "deep-link", "roles": ["facilitator"] },
+    { "from": "bootstrap", "to": "preview-canvas", "trigger": "Navigate to /preview", "triggerType": "deep-link", "roles": ["dev"] },
+    { "from": "preview-canvas", "to": "participant-shell", "trigger": "Auto-click participant landing button", "triggerType": "programmatic", "roles": ["participant"] },
+    { "from": "preview-canvas", "to": "facilitator-shell", "trigger": "Auto-click facilitator landing button", "triggerType": "programmatic", "roles": ["facilitator"] },
+    { "from": "landing", "to": "participant-shell", "trigger": "I'm a Participant", "triggerType": "click", "roles": ["participant"] },
+    { "from": "landing", "to": "facilitator-shell", "trigger": "I'm the Facilitator", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "landing", "trigger": "Exit header button", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "participant-shell", "to": "centered-loader", "trigger": "Initial mount while loading", "triggerType": "auto", "roles": ["participant"] },
+    { "from": "centered-loader", "to": "participant-shell", "trigger": "Storage poll complete", "triggerType": "auto", "roles": ["participant"] },
+    { "from": "facilitator-shell", "to": "centered-loader", "trigger": "Initial mount or lock checking", "triggerType": "auto", "roles": ["facilitator"] },
+    { "from": "centered-loader", "to": "fac-lock-pending", "trigger": "Another facilitator holds fresh lock", "triggerType": "auto", "roles": ["facilitator"] },
+    { "from": "centered-loader", "to": "facilitator-shell", "trigger": "Lock acquired or stale", "triggerType": "auto", "roles": ["facilitator"] },
+    { "from": "fac-lock-pending", "to": "facilitator-shell", "trigger": "Take over as facilitator", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-lock-pending", "to": "landing", "trigger": "Exit", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-lock-displaced", "trigger": "Lock heartbeat detects another session", "triggerType": "auto", "roles": ["facilitator"] },
+    { "from": "fac-lock-displaced", "to": "facilitator-shell", "trigger": "Take it back", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-lock-displaced", "to": "landing", "trigger": "Exit", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-board-empathy", "trigger": "Board tab · Empathy Maps", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-board-parking", "trigger": "Board tab · Parking Lot", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-board-reflections", "trigger": "Board tab · Reflections", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-board-practices", "trigger": "Board tab · Practice Proposals", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-board-commitments", "trigger": "Board tab · Commitments", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-board-empathy", "to": "fac-board-empathy-grid", "trigger": "Gallery (8) toggle", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-board-empathy", "to": "fac-board-empathy-focus", "trigger": "Focus (1) toggle or click persona card", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-board-empathy-focus", "to": "fac-board-empathy-focus", "trigger": "Prev / next persona chevrons or thumbnail strip", "triggerType": "click", "roles": ["facilitator"], "note": "Same node; persona changes in place" },
+    { "from": "facilitator-shell", "to": "fac-qr-panel", "trigger": "QR header button", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-qr-panel", "to": "facilitator-shell", "trigger": "Close or backdrop click", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-big-prompt", "trigger": "Prompt header button", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-big-prompt", "to": "facilitator-shell", "trigger": "Close or backdrop click", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-agenda-timer", "trigger": "Clock icon", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "facilitator-shell", "to": "fac-settings", "trigger": "Settings gear", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-settings", "to": "facilitator-shell", "trigger": "Close or backdrop click", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-settings", "to": "fac-settings-personas", "trigger": "Personas tab", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-settings", "to": "fac-settings-move", "trigger": "Move stickies tab", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-settings", "to": "fac-settings-export", "trigger": "Print / Export tab", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-settings", "to": "fac-settings-clear", "trigger": "Clear data tab", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-settings-personas", "to": "fac-persona-editor", "trigger": "Click persona card", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-persona-editor", "to": "fac-settings-personas", "trigger": "Cancel or Save", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "fac-settings-export", "to": "fac-print-view", "trigger": "Open print view", "triggerType": "click", "roles": ["facilitator"] },
+    { "from": "participant-shell", "to": "part-flow-empathy", "trigger": "activeBoard = empathy (from storage)", "triggerType": "storage-sync", "roles": ["participant"] },
+    { "from": "participant-shell", "to": "part-flow-simple-parking", "trigger": "activeBoard = parking", "triggerType": "storage-sync", "roles": ["participant"] },
+    { "from": "participant-shell", "to": "part-flow-simple-reflections", "trigger": "activeBoard = reflections", "triggerType": "storage-sync", "roles": ["participant"] },
+    { "from": "participant-shell", "to": "part-flow-practices", "trigger": "activeBoard = practices", "triggerType": "storage-sync", "roles": ["participant"] },
+    { "from": "participant-shell", "to": "part-flow-simple-commitments", "trigger": "activeBoard = commitments", "triggerType": "storage-sync", "roles": ["participant"] },
+    { "from": "part-flow-empathy", "to": "part-empathy-persona", "trigger": "Default step", "triggerType": "auto", "roles": ["participant"] },
+    { "from": "part-empathy-persona", "to": "part-empathy-compose", "trigger": "Select persona card", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-empathy-compose", "to": "part-empathy-persona", "trigger": "Header Back", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-empathy-persona", "to": "part-sample-overlay", "trigger": "See an example empathy map", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-sample-overlay", "to": "part-empathy-persona", "trigger": "Close / Got it", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-empathy-compose", "to": "part-posted-modal", "trigger": "Submit sticky", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-flow-simple-parking", "to": "part-posted-modal", "trigger": "Submit sticky", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-flow-simple-reflections", "to": "part-posted-modal", "trigger": "Submit sticky", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-flow-simple-commitments", "to": "part-posted-modal", "trigger": "Submit sticky", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-flow-practices", "to": "part-practices-column", "trigger": "Default step", "triggerType": "auto", "roles": ["participant"] },
+    { "from": "part-practices-column", "to": "part-practices-write", "trigger": "Select column", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-practices-write", "to": "part-practices-column", "trigger": "Header Back", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-practices-write", "to": "part-posted-modal", "trigger": "Submit proposal", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-posted-modal", "to": "part-empathy-compose", "trigger": "Add another (empathy)", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-posted-modal", "to": "part-empathy-persona", "trigger": "Switch to different person (empathy)", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-posted-modal", "to": "part-flow-simple-parking", "trigger": "Add another (simple boards)", "triggerType": "click", "roles": ["participant"] },
+    { "from": "participant-shell", "to": "part-parking-overlay", "trigger": "Add to Parking Lot FAB", "triggerType": "click", "roles": ["participant"] },
+    { "from": "part-parking-overlay", "to": "participant-shell", "trigger": "Close or Back to workshop after success", "triggerType": "click", "roles": ["participant"] },
+    { "from": "fac-qr-panel", "to": "participant-shell", "trigger": "Participant scans QR (?role=participant)", "triggerType": "deep-link", "roles": ["participant"], "note": "Cross-device; not an in-app edge" }
+  ],
+  "syncLinks": [
+    {
+      "id": "sync-active-board",
+      "driver": "facilitator",
+      "follower": "participant",
+      "storageKey": "acc-active-board",
+      "direction": "facilitator-to-participant",
+      "mechanism": "Facilitator setActiveBoard writes; participant polls every 3s",
+      "effect": "Participant main content switches between board flows; participant cannot change board"
+    },
+    {
+      "id": "sync-stickies",
+      "driver": "participant",
+      "follower": "facilitator",
+      "storageKeys": [
+        "acc-stickies-empathy",
+        "acc-stickies-parking-lot",
+        "acc-stickies-reflections",
+        "acc-stickies-practices",
+        "acc-stickies-commitments"
+      ],
+      "direction": "participant-to-facilitator",
+      "mechanism": "Participant submit writes; facilitator polls every 3s",
+      "effect": "Facilitator board views update with new stickies"
+    },
+    {
+      "id": "sync-personas",
+      "driver": "facilitator",
+      "follower": "participant",
+      "storageKey": "acc-personas",
+      "direction": "facilitator-to-participant",
+      "mechanism": "Settings persona edits; both roles poll",
+      "effect": "Participant persona picker reflects facilitator edits"
+    },
+    {
+      "id": "sync-facilitator-lock",
+      "driver": "facilitator",
+      "follower": "facilitator",
+      "storageKey": "acc-facilitator-lock",
+      "direction": "bidirectional",
+      "mechanism": "Heartbeat every 5s; stale after 15s",
+      "effect": "Only one active facilitator session per room"
+    },
+    {
+      "id": "sync-commitments-from-practices",
+      "driver": "participant",
+      "follower": "participant",
+      "storageKey": "acc-stickies-practices",
+      "direction": "indirect",
+      "mechanism": "Commitments SimpleFlow polls practices every 4s for tap-to-fill suggestions",
+      "effect": "Practice proposals surface as commitment suggestions on participant phone only"
+    }
+  ],
+  "diagramLayers": [
+    {
+      "id": "layer-url",
+      "title": "URL & bootstrap",
+      "nodeIds": ["bootstrap", "landing", "preview-canvas"],
+      "recommendedDiagram": "flowchart"
+    },
+    {
+      "id": "layer-top-level",
+      "title": "Role shells",
+      "nodeIds": ["landing", "participant-shell", "facilitator-shell", "centered-loader", "fac-lock-pending", "fac-lock-displaced"],
+      "recommendedDiagram": "flowchart"
+    },
+    {
+      "id": "layer-facilitator-boards",
+      "title": "Facilitator workshop boards",
+      "nodeIds": [
+        "fac-board-empathy",
+        "fac-board-empathy-grid",
+        "fac-board-empathy-focus",
+        "fac-board-parking",
+        "fac-board-reflections",
+        "fac-board-practices",
+        "fac-board-commitments"
+      ],
+      "recommendedDiagram": "stateDiagram"
+    },
+    {
+      "id": "layer-facilitator-tools",
+      "title": "Facilitator overlays & settings",
+      "nodeIds": [
+        "fac-qr-panel",
+        "fac-big-prompt",
+        "fac-agenda-timer",
+        "fac-settings",
+        "fac-settings-personas",
+        "fac-persona-editor",
+        "fac-settings-move",
+        "fac-settings-export",
+        "fac-print-view",
+        "fac-settings-clear"
+      ],
+      "recommendedDiagram": "flowchart"
+    },
+    {
+      "id": "layer-participant-boards",
+      "title": "Participant board flows",
+      "nodeIds": [
+        "part-flow-empathy",
+        "part-empathy-persona",
+        "part-empathy-compose",
+        "part-flow-simple-parking",
+        "part-flow-simple-reflections",
+        "part-flow-practices",
+        "part-practices-column",
+        "part-practices-write",
+        "part-flow-simple-commitments"
+      ],
+      "recommendedDiagram": "stateDiagram"
+    },
+    {
+      "id": "layer-participant-overlays",
+      "title": "Participant modals & parking",
+      "nodeIds": ["part-parking-overlay", "part-sample-overlay", "part-posted-modal"],
+      "recommendedDiagram": "flowchart"
+    },
+    {
+      "id": "layer-cross-role",
+      "title": "Facilitator ↔ participant sync",
+      "syncLinkIds": ["sync-active-board", "sync-stickies", "sync-personas", "sync-facilitator-lock"],
+      "recommendedDiagram": "sequenceDiagram"
+    }
+  ],
+  "mermaidHints": {
+    "topLevelFlow": "flowchart TD\n  EP[\"/\"] --> L[Landing]\n  EP -->|\"?role=participant\"| P[Participant shell]\n  EP -->|\"?role=facilitator\"| F[Facilitator shell]\n  PREV[\"/preview\"] --> PV[Preview canvas]\n  L -->|Participant| P\n  L -->|Facilitator| F\n  F -->|Exit| L",
+    "facilitatorBoards": "stateDiagram-v2\n  [*] --> Empathy\n  Empathy --> Parking: tab\n  Parking --> Reflections: tab\n  Reflections --> Practices: tab\n  Practices --> Commitments: tab\n  state Empathy {\n    [*] --> Gallery\n    Gallery --> Focus: click persona\n    Focus --> Gallery: Gallery toggle\n  }",
+    "participantEmpathy": "stateDiagram-v2\n  [*] --> PickPersona\n  PickPersona --> Compose: select persona\n  Compose --> PickPersona: header back\n  PickPersona --> Sample: see example\n  Sample --> PickPersona: close\n  Compose --> Posted: submit\n  Posted --> Compose: add another\n  Posted --> PickPersona: switch person",
+    "crossRoleSync": "sequenceDiagram\n  participant F as Facilitator\n  participant S as Storage\n  participant P as Participant\n  F->>S: set acc-active-board\n  P->>S: poll (3s)\n  S-->>P: active board id\n  P->>P: switch board flow\n  P->>S: append sticky\n  F->>S: poll (3s)\n  S-->>F: updated stickies"
+  }
+}

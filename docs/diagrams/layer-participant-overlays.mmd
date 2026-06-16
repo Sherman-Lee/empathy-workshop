@@ -1,0 +1,29 @@
+flowchart TD
+  %% Participant modals & parking
+  part_parking_overlay(["Parking lot overlay"])
+  part_sample_overlay(["Sample empathy map"])
+  part_posted_modal(["Posted confirmation"])
+  participant_shell["Participant app shell"]
+  part_flow_simple_parking["Parking Lot prompt flow"]
+  part_flow_simple_reflections["Reflections prompt flow"]
+  part_flow_simple_commitments["Commitments prompt flow"]
+  part_empathy_persona["Empathy"]
+  part_empathy_compose["Empathy"]
+  part_practices_write["Practices"]
+  participant_shell ==>|"activeBoard = parking"| part_flow_simple_parking
+  participant_shell ==>|"activeBoard = reflections"| part_flow_simple_reflections
+  participant_shell ==>|"activeBoard = commitments"| part_flow_simple_commitments
+  part_empathy_persona -->|"Select persona card"| part_empathy_compose
+  part_empathy_compose -->|"Header Back"| part_empathy_persona
+  part_empathy_persona -->|"See an example empathy map"| part_sample_overlay
+  part_sample_overlay -->|"Close / Got it"| part_empathy_persona
+  part_empathy_compose -->|"Submit sticky"| part_posted_modal
+  part_flow_simple_parking -->|"Submit sticky"| part_posted_modal
+  part_flow_simple_reflections -->|"Submit sticky"| part_posted_modal
+  part_flow_simple_commitments -->|"Submit sticky"| part_posted_modal
+  part_practices_write -->|"Submit proposal"| part_posted_modal
+  part_posted_modal -->|"Add another (empathy)"| part_empathy_compose
+  part_posted_modal -->|"Switch to different person (empathy)"| part_empathy_persona
+  part_posted_modal -->|"Add another (simple boards)"| part_flow_simple_parking
+  participant_shell -->|"Add to Parking Lot FAB"| part_parking_overlay
+  part_parking_overlay -->|"Close or Back to workshop after success"| participant_shell

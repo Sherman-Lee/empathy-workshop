@@ -1,0 +1,16 @@
+stateDiagram-v2
+  %% Facilitator workshop boards
+  fac_board_parking: Parking Lot board
+  fac_board_reflections: Reflections board
+  fac_board_practices: Practice Proposals board
+  fac_board_commitments: Commitments board
+  [*] --> fac_board_empathy
+  fac_board_empathy --> fac_board_parking: Parking Lot board
+  fac_board_parking --> fac_board_reflections: Reflections board
+  fac_board_reflections --> fac_board_practices: Practice Proposals board
+  fac_board_practices --> fac_board_commitments: Commitments board
+  state "Empathy Maps board" as fac_board_empathy {
+    [*] --> fac_board_empathy_grid
+    fac_board_empathy_grid --> fac_board_empathy_focus: Focus (1)
+    fac_board_empathy_focus --> fac_board_empathy_grid: Gallery (8)
+  }

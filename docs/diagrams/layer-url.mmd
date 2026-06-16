@@ -1,0 +1,23 @@
+flowchart TD
+  %% URL & bootstrap
+  bootstrap["App bootstrap"]
+  landing["Landing"]
+  preview_canvas["Preview canvas"]
+  participant_shell["Participant app shell"]
+  facilitator_shell["Facilitator app shell"]
+  fac_lock_pending{{"Facilitator lock"}}
+  fac_lock_displaced(["Facilitator lock"])
+  bootstrap -->|"Navigate to / with no role query"| landing
+  bootstrap -->|"?role=participant"| participant_shell
+  bootstrap -->|"?role=facilitator"| facilitator_shell
+  bootstrap -->|"Navigate to /preview"| preview_canvas
+  preview_canvas -.->|"Auto-click participant landing button"| participant_shell
+  preview_canvas -.->|"Auto-click facilitator landing button"| facilitator_shell
+  landing -->|"I'm a Participant"| participant_shell
+  landing -->|"I'm the Facilitator"| facilitator_shell
+  facilitator_shell -->|"Exit header button"| landing
+  fac_lock_pending -->|"Take over as facilitator"| facilitator_shell
+  fac_lock_pending -->|"Exit"| landing
+  facilitator_shell -.->|"Lock heartbeat detects another session"| fac_lock_displaced
+  fac_lock_displaced -->|"Take it back"| facilitator_shell
+  fac_lock_displaced -->|"Exit"| landing

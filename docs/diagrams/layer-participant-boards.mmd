@@ -1,0 +1,22 @@
+stateDiagram-v2
+  %% Participant board flows
+  part_flow_empathy: Empathy flow
+  part_empathy_persona: Empathy
+  part_empathy_compose: Empathy
+  part_flow_simple_parking: Parking Lot prompt flow
+  part_flow_simple_reflections: Reflections prompt flow
+  part_flow_practices: Practice proposals flow
+  part_practices_column: Practices
+  part_practices_write: Practices
+  part_flow_simple_commitments: Commitments prompt flow
+  [*] --> part_flow_empathy
+  [*] --> part_flow_simple_parking
+  [*] --> part_flow_simple_reflections
+  [*] --> part_flow_practices
+  [*] --> part_flow_simple_commitments
+  part_flow_empathy --> part_empathy_persona: Default step
+  part_empathy_persona --> part_empathy_compose: Select persona card
+  part_empathy_compose --> part_empathy_persona: Header Back
+  part_flow_practices --> part_practices_column: Default step
+  part_practices_column --> part_practices_write: Select column
+  part_practices_write --> part_practices_column: Header Back

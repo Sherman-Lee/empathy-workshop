@@ -1,0 +1,29 @@
+sequenceDiagram
+  %% Facilitator ↔ participant sync
+  %% sync-active-board: Participant main content switches between board flows; participant cannot change board
+  participant Facilitator
+  participant Storage
+  participant Participant
+  Facilitator->>Storage: set acc-active-board
+  Participant->>Storage: poll
+  Storage-->>Participant: Participant main content switches between board flows; participant cannot change board
+
+  %% sync-stickies: Facilitator board views update with new stickies
+  participant Participant
+  participant Storage
+  participant Facilitator
+  Participant->>Storage: append acc-stickies-empathy, acc-stickies-parking-lot, acc-stickies-reflections, acc-stickies-practices, acc-stickies-commitments
+  Facilitator->>Storage: poll
+  Storage-->>Facilitator: Facilitator board views update with new stickies
+
+  %% sync-personas: Participant persona picker reflects facilitator edits
+  participant Facilitator
+  participant Storage
+  participant Participant
+  Facilitator->>Storage: set acc-personas
+  Participant->>Storage: poll
+  Storage-->>Participant: Participant persona picker reflects facilitator edits
+
+  %% sync-facilitator-lock: Only one active facilitator session per room
+  participant Facilitator
+  Facilitator->>Facilitator: Heartbeat every 5s; stale after 15s (acc-facilitator-lock)

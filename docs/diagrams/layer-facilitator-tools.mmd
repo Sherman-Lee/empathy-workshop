@@ -1,0 +1,29 @@
+flowchart TD
+  %% Facilitator overlays & settings
+  fac_qr_panel(["QR"])
+  fac_big_prompt(["Big prompt (projector intro)"])
+  fac_agenda_timer["Agenda timer"]
+  fac_settings(["Settings"])
+  fac_settings_personas["Settings"]
+  fac_persona_editor["Persona editor"]
+  fac_settings_move["Settings"]
+  fac_settings_export["Settings"]
+  fac_print_view["Print / PDF export"]
+  fac_settings_clear["Settings"]
+  facilitator_shell["Facilitator app shell"]
+  participant_shell["Participant app shell"]
+  facilitator_shell -->|"QR header button"| fac_qr_panel
+  fac_qr_panel -->|"Close or backdrop click"| facilitator_shell
+  facilitator_shell -->|"Prompt header button"| fac_big_prompt
+  fac_big_prompt -->|"Close or backdrop click"| facilitator_shell
+  facilitator_shell -->|"Clock icon"| fac_agenda_timer
+  facilitator_shell -->|"Settings gear"| fac_settings
+  fac_settings -->|"Close or backdrop click"| facilitator_shell
+  fac_settings -->|"Personas tab"| fac_settings_personas
+  fac_settings -->|"Move stickies tab"| fac_settings_move
+  fac_settings -->|"Print / Export tab"| fac_settings_export
+  fac_settings -->|"Clear data tab"| fac_settings_clear
+  fac_settings_personas -->|"Click persona card"| fac_persona_editor
+  fac_persona_editor -->|"Cancel or Save"| fac_settings_personas
+  fac_settings_export -->|"Open print view"| fac_print_view
+  fac_qr_panel -->|"Participant scans QR (?role=participant)"| participant_shell
