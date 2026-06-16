@@ -374,6 +374,121 @@ function renderOverview(seed, nodeMap) {
   return lines.join("\n");
 }
 
+const DIAGRAM_GUIDE = {
+  overview: {
+    title: "Overview — full workshop navigation",
+    audience: "Everyone",
+    purpose:
+      "The single map of how the workshop app fits together: how people enter as facilitator or participant, what each role sees, and how the projector and phones connect. Start here if you are onboarding facilitators or explaining the tool to stakeholders.",
+    lookFor:
+      "URL entry points at the top, the landing role chooser, facilitator board tabs, participant flows driven by storage sync (thick arrows), and the parking-lot shortcut available on every board.",
+  },
+  "layer-url": {
+    title: "URL & bootstrap — how to open the app",
+    audience: "Facilitators, tech setup",
+    purpose:
+      "Shows the only two browser addresses the app uses (`/` for the live workshop, `/preview` for the design demo) and how query parameters skip the landing screen. Use this when building join links, testing QR codes, or sharing the preview canvas.",
+    lookFor:
+      "Deep links like `/?role=participant` (phone join) and `/?role=facilitator` (projector). Dotted arrows are automatic steps, such as the preview page clicking the role buttons for you.",
+  },
+  "layer-top-level": {
+    title: "Role shells — facilitator vs participant",
+    audience: "Facilitators, product reviewers",
+    purpose:
+      "What happens immediately after someone chooses a role. The facilitator may hit a lock screen if another tab is already driving the room; the participant waits briefly while connecting to shared storage. This diagram clarifies who controls the agenda and what each side can navigate.",
+    lookFor:
+      "Only the facilitator can exit back to landing. Participant board content follows the facilitator's active tab (thick `==>` arrows). Facilitator tools (QR, prompt, settings) branch off the main shell.",
+  },
+  "layer-facilitator-boards": {
+    title: "Facilitator boards — workshop agenda on the projector",
+    audience: "Facilitators",
+    purpose:
+      "The five phases you move the room through by clicking tabs: Empathy Maps, Parking Lot, Reflections, Practice Proposals, and Commitments. Switching tabs updates every participant phone within a few seconds. On Empathy Maps you can show all eight personas at once (gallery) or zoom into one (focus).",
+    lookFor:
+      "Linear tab order across boards. The nested Empathy Maps state shows gallery ↔ focus toggles while staying on the same board.",
+  },
+  "layer-facilitator-tools": {
+    title: "Facilitator tools — room controls beyond boards",
+    audience: "Facilitators",
+    purpose:
+      "Utilities in the header bar for running the session: show a QR code so phones can join, display the current prompt full-screen on the projector, pace the agenda with the timer, and open settings to edit personas, reclassify stickies, print a PDF, or wipe test data.",
+    lookFor:
+      "QR links out to the participant join URL. Settings has four tabs; persona editing and print/export are one level deeper.",
+  },
+  "layer-participant-boards": {
+    title: "Participant board flows — what phones show per phase",
+    audience: "Facilitators, participants",
+    purpose:
+      "The submission experience on a phone for each workshop phase. Participants never pick the board themselves — they always see whatever the facilitator has activated. Empathy and Practice Proposals use two-step flows; the other boards are a single prompt and submit.",
+    lookFor:
+      "Back navigation within empathy and practices flows. Simple boards (parking, reflections, commitments) have no sub-steps in this diagram.",
+  },
+  "layer-participant-overlays": {
+    title: "Participant overlays — modals and parking shortcut",
+    audience: "Participants, facilitators",
+    purpose:
+      "Pop-ups and shortcuts on the phone that sit above the active board. The parking-lot button is always available at the bottom so operational concerns can be captured without leaving the current exercise. After submitting, the posted confirmation lets people add another note or switch persona.",
+    lookFor:
+      "Parking overlay reachable from any board. Sample empathy map is only offered during persona selection. Posted modal paths differ for empathy vs other boards.",
+  },
+  "layer-cross-role": {
+    title: "Cross-role sync — how projector and phones stay aligned",
+    audience: "Facilitators, tech setup",
+    purpose:
+      "The behind-the-scenes contract between devices. No URLs change when the facilitator switches boards — shared storage carries state. Facilitator tab changes push the active board to phones; participant submissions flow back to the projector. Only one facilitator session can drive a room at a time.",
+    lookFor:
+      "Four sync channels: active board, sticky submissions, persona edits, and facilitator lock heartbeat.",
+  },
+};
+
+function guideFor(name) {
+  return (
+    DIAGRAM_GUIDE[name] || {
+      title: name,
+      audience: null,
+      purpose: null,
+      lookFor: null,
+    }
+  );
+}
+
+function renderReadmeIntro(seed) {
+  return [
+    `# ${seed.meta.app} — UI flow diagrams`,
+    "",
+    "Visual maps of how facilitators and participants move through the workshop app. Each diagram below focuses on one slice of the experience — from opening a link on your phone to syncing stickies on the projector.",
+    "",
+    `Generated from \`docs/ui-flow.seed.json\` by \`scripts/ui-flow-to-mermaid.js\`. Re-generate after seed changes: \`npm run diagrams\``,
+    "",
+    "## Reading the diagrams",
+    "",
+    "| Arrow style | Meaning |",
+    "|-------------|---------|",
+    "| Solid (`-->`) | Someone tapped a button or followed a link |",
+    "| Dotted (`-.->`) | Automatic step (loading, lock check, preview auto-enter) |",
+    "| Thick (`==>`) | Storage sync — facilitator change propagates to phones |",
+    "",
+    "## Diagram guide",
+    "",
+    "| Diagram | Who it's for | What it answers |",
+    "|---------|--------------|-----------------|",
+    ...Object.entries(DIAGRAM_GUIDE).map(([id, g]) => {
+      const link = `[${g.title}](#${id})`;
+      return `| ${link} | ${g.audience} | ${g.purpose.split(".")[0]}. |`;
+    }),
+    "",
+  ];
+}
+
+function renderDiagramSection(name, content) {
+  const g = guideFor(name);
+  const lines = [`## ${name}`, "", `**${g.title}**`, ""];
+  if (g.audience) lines.push(`*For:* ${g.audience}`, "");
+  if (g.purpose) lines.push(g.purpose, "");
+  if (g.lookFor) lines.push(`**What to look for:** ${g.lookFor}`, "");
+  lines.push("```mermaid", content, "```", "");
+  return lines;
+}
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const seed = loadSeed(opts.seed);
@@ -417,19 +532,14 @@ function main() {
   mkdirSync(opts.out, { recursive: true });
 
   const indexLines = [
-    `# ${seed.meta.app} — UI flow diagrams`,
-    "",
-    `Generated from \`docs/ui-flow.seed.json\` by \`scripts/ui-flow-to-mermaid.js\`.`,
-    "",
-    "Re-generate: `npm run diagrams`",
-    "",
+    ...renderReadmeIntro(seed),
   ];
 
   for (const { name, content } of outputs) {
     const file = `${name}.mmd`;
     const path = join(opts.out, file);
     writeFileSync(path, `${content}\n`, "utf8");
-    indexLines.push(`## ${name}`, "", "```mermaid", content, "```", "");
+    indexLines.push(...renderDiagramSection(name, content));
     console.log(`Wrote ${path}`);
   }
 

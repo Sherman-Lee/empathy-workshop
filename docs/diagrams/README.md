@@ -1,10 +1,43 @@
 # ACC Empathy Workshop — UI flow diagrams
 
-Generated from `docs/ui-flow.seed.json` by `scripts/ui-flow-to-mermaid.js`.
+Visual maps of how facilitators and participants move through the workshop app. Each diagram below focuses on one slice of the experience — from opening a link on your phone to syncing stickies on the projector.
 
-Re-generate: `npm run diagrams`
+Generated from `docs/ui-flow.seed.json` by `scripts/ui-flow-to-mermaid.js`. Re-generate after seed changes: `npm run diagrams`
+
+## Reading the diagrams
+
+
+| Arrow style     | Meaning                                                  |
+| --------------- | -------------------------------------------------------- |
+| Solid (`-->`)   | Someone tapped a button or followed a link               |
+| Dotted (`-.->`) | Automatic step (loading, lock check, preview auto-enter) |
+| Thick (`==>`)   | Storage sync — facilitator change propagates to phones   |
+
+
+## Diagram guide
+
+
+| Diagram                                                                            | Who it's for                    | What it answers                                                                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Overview — full workshop navigation](#overview)                                   | Everyone                        | The single map of how the workshop app fits together: how people enter as facilitator or participant, what each role sees, and how the projector and phones connect.                                                                                                      |
+| [URL & bootstrap — how to open the app](#layer-url)                                | Facilitators, tech setup        | Shows the only two browser addresses the app uses (`/` for the live workshop, `/preview` for the design demo) and how query parameters skip the landing screen.                                                                                                           |
+| [Role shells — facilitator vs participant](#layer-top-level)                       | Facilitators, product reviewers | What happens immediately after someone chooses a role.                                                                                                                                                                                                                    |
+| [Facilitator boards — workshop agenda on the projector](#layer-facilitator-boards) | Facilitators                    | The five phases you move the room through by clicking tabs: Empathy Maps, Parking Lot, Reflections, Practice Proposals, and Commitments.                                                                                                                                  |
+| [Facilitator tools — room controls beyond boards](#layer-facilitator-tools)        | Facilitators                    | Utilities in the header bar for running the session: show a QR code so phones can join, display the current prompt full-screen on the projector, pace the agenda with the timer, and open settings to edit personas, reclassify stickies, print a PDF, or wipe test data. |
+| [Participant board flows — what phones show per phase](#layer-participant-boards)  | Facilitators, participants      | The submission experience on a phone for each workshop phase.                                                                                                                                                                                                             |
+| [Participant overlays — modals and parking shortcut](#layer-participant-overlays)  | Participants, facilitators      | Pop-ups and shortcuts on the phone that sit above the active board.                                                                                                                                                                                                       |
+| [Cross-role sync — how projector and phones stay aligned](#layer-cross-role)       | Facilitators, tech setup        | The behind-the-scenes contract between devices.                                                                                                                                                                                                                           |
+
 
 ## overview
+
+**Overview — full workshop navigation**
+
+*For:* Everyone
+
+The single map of how the workshop app fits together: how people enter as facilitator or participant, what each role sees, and how the projector and phones connect. Start here if you are onboarding facilitators or explaining the tool to stakeholders.
+
+**What to look for:** URL entry points at the top, the landing role chooser, facilitator board tabs, participant flows driven by storage sync (thick arrows), and the parking-lot shortcut available on every board.
 
 ```mermaid
 flowchart TD
@@ -81,7 +114,17 @@ flowchart TD
   part_parking_overlay -->|"Close or Back to workshop after success"| participant_shell
 ```
 
+
+
 ## layer-url
+
+**URL & bootstrap — how to open the app**
+
+*For:* Facilitators, tech setup
+
+Shows the only two browser addresses the app uses (`/` for the live workshop, `/preview` for the design demo) and how query parameters skip the landing screen. Use this when building join links, testing QR codes, or sharing the preview canvas.
+
+**What to look for:** Deep links like `/?role=participant` (phone join) and `/?role=facilitator` (projector). Dotted arrows are automatic steps, such as the preview page clicking the role buttons for you.
 
 ```mermaid
 flowchart TD
@@ -109,7 +152,17 @@ flowchart TD
   fac_lock_displaced -->|"Exit"| landing
 ```
 
+
+
 ## layer-top-level
+
+**Role shells — facilitator vs participant**
+
+*For:* Facilitators, product reviewers
+
+What happens immediately after someone chooses a role. The facilitator may hit a lock screen if another tab is already driving the room; the participant waits briefly while connecting to shared storage. This diagram clarifies who controls the agenda and what each side can navigate.
+
+**What to look for:** Only the facilitator can exit back to landing. Participant board content follows the facilitator's active tab (thick `==>` arrows). Facilitator tools (QR, prompt, settings) branch off the main shell.
 
 ```mermaid
 flowchart TD
@@ -178,7 +231,17 @@ flowchart TD
   fac_qr_panel -->|"Participant scans QR (?role=participant)"| participant_shell
 ```
 
+
+
 ## layer-facilitator-boards
+
+**Facilitator boards — workshop agenda on the projector**
+
+*For:* Facilitators
+
+The five phases you move the room through by clicking tabs: Empathy Maps, Parking Lot, Reflections, Practice Proposals, and Commitments. Switching tabs updates every participant phone within a few seconds. On Empathy Maps you can show all eight personas at once (gallery) or zoom into one (focus).
+
+**What to look for:** Linear tab order across boards. The nested Empathy Maps state shows gallery ↔ focus toggles while staying on the same board.
 
 ```mermaid
 stateDiagram-v2
@@ -199,7 +262,17 @@ stateDiagram-v2
   }
 ```
 
+
+
 ## layer-facilitator-tools
+
+**Facilitator tools — room controls beyond boards**
+
+*For:* Facilitators
+
+Utilities in the header bar for running the session: show a QR code so phones can join, display the current prompt full-screen on the projector, pace the agenda with the timer, and open settings to edit personas, reclassify stickies, print a PDF, or wipe test data.
+
+**What to look for:** QR links out to the participant join URL. Settings has four tabs; persona editing and print/export are one level deeper.
 
 ```mermaid
 flowchart TD
@@ -233,7 +306,17 @@ flowchart TD
   fac_qr_panel -->|"Participant scans QR (?role=participant)"| participant_shell
 ```
 
+
+
 ## layer-participant-boards
+
+**Participant board flows — what phones show per phase**
+
+*For:* Facilitators, participants
+
+The submission experience on a phone for each workshop phase. Participants never pick the board themselves — they always see whatever the facilitator has activated. Empathy and Practice Proposals use two-step flows; the other boards are a single prompt and submit.
+
+**What to look for:** Back navigation within empathy and practices flows. Simple boards (parking, reflections, commitments) have no sub-steps in this diagram.
 
 ```mermaid
 stateDiagram-v2
@@ -260,7 +343,17 @@ stateDiagram-v2
   part_practices_write --> part_practices_column: Header Back
 ```
 
+
+
 ## layer-participant-overlays
+
+**Participant overlays — modals and parking shortcut**
+
+*For:* Participants, facilitators
+
+Pop-ups and shortcuts on the phone that sit above the active board. The parking-lot button is always available at the bottom so operational concerns can be captured without leaving the current exercise. After submitting, the posted confirmation lets people add another note or switch persona.
+
+**What to look for:** Parking overlay reachable from any board. Sample empathy map is only offered during persona selection. Posted modal paths differ for empathy vs other boards.
 
 ```mermaid
 flowchart TD
@@ -294,7 +387,17 @@ flowchart TD
   part_parking_overlay -->|"Close or Back to workshop after success"| participant_shell
 ```
 
+
+
 ## layer-cross-role
+
+**Cross-role sync — how projector and phones stay aligned**
+
+*For:* Facilitators, tech setup
+
+The behind-the-scenes contract between devices. No URLs change when the facilitator switches boards — shared storage carries state. Facilitator tab changes push the active board to phones; participant submissions flow back to the projector. Only one facilitator session can drive a room at a time.
+
+**What to look for:** Four sync channels: active board, sticky submissions, persona edits, and facilitator lock heartbeat.
 
 ```mermaid
 sequenceDiagram
@@ -327,3 +430,6 @@ sequenceDiagram
   participant Facilitator
   Facilitator->>Facilitator: Heartbeat every 5s; stale after 15s (acc-facilitator-lock)
 ```
+
+
+
