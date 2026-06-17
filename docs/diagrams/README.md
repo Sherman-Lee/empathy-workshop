@@ -6,28 +6,24 @@ Generated from `docs/ui-flow.seed.json` by `scripts/ui-flow-to-mermaid.js`. Re-g
 
 ## Reading the diagrams
 
-
-| Arrow style     | Meaning                                                  |
-| --------------- | -------------------------------------------------------- |
-| Solid (`-->`)   | Someone tapped a button or followed a link               |
+| Arrow style | Meaning |
+|-------------|---------|
+| Solid (`-->`) | Someone tapped a button or followed a link |
 | Dotted (`-.->`) | Automatic step (loading, lock check, preview auto-enter) |
-| Thick (`==>`)   | Storage sync — facilitator change propagates to phones   |
-
+| Thick (`==>`) | Storage sync — facilitator change propagates to phones |
 
 ## Diagram guide
 
-
-| Diagram                                                                            | Who it's for                    | What it answers                                                                                                                                                                                                                                                           |
-| ---------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Overview — full workshop navigation](#overview)                                   | Everyone                        | The single map of how the workshop app fits together: how people enter as facilitator or participant, what each role sees, and how the projector and phones connect.                                                                                                      |
-| [URL & bootstrap — how to open the app](#layer-url)                                | Facilitators, tech setup        | Shows the only two browser addresses the app uses (`/` for the live workshop, `/preview` for the design demo) and how query parameters skip the landing screen.                                                                                                           |
-| [Role shells — facilitator vs participant](#layer-top-level)                       | Facilitators, product reviewers | What happens immediately after someone chooses a role.                                                                                                                                                                                                                    |
-| [Facilitator boards — workshop agenda on the projector](#layer-facilitator-boards) | Facilitators                    | The five phases you move the room through by clicking tabs: Empathy Maps, Parking Lot, Reflections, Practice Proposals, and Commitments.                                                                                                                                  |
-| [Facilitator tools — room controls beyond boards](#layer-facilitator-tools)        | Facilitators                    | Utilities in the header bar for running the session: show a QR code so phones can join, display the current prompt full-screen on the projector, pace the agenda with the timer, and open settings to edit personas, reclassify stickies, print a PDF, or wipe test data. |
-| [Participant board flows — what phones show per phase](#layer-participant-boards)  | Facilitators, participants      | The submission experience on a phone for each workshop phase.                                                                                                                                                                                                             |
-| [Participant overlays — modals and parking shortcut](#layer-participant-overlays)  | Participants, facilitators      | Pop-ups and shortcuts on the phone that sit above the active board.                                                                                                                                                                                                       |
-| [Cross-role sync — how projector and phones stay aligned](#layer-cross-role)       | Facilitators, tech setup        | The behind-the-scenes contract between devices.                                                                                                                                                                                                                           |
-
+| Diagram | Who it's for | What it answers |
+|---------|--------------|-----------------|
+| [Overview — full workshop navigation](#overview) | Everyone | The single map of how the workshop app fits together: how people enter as facilitator or participant, what each role sees, and how the projector and phones connect. |
+| [URL & bootstrap — how to open the app](#layer-url) | Facilitators, tech setup | Shows the only two browser addresses the app uses (`/` for the live workshop, `/preview` for the design demo) and how query parameters skip the landing screen. |
+| [Role shells — facilitator vs participant](#layer-top-level) | Facilitators, product reviewers | What happens immediately after someone chooses a role. |
+| [Facilitator boards — workshop agenda on the projector](#layer-facilitator-boards) | Facilitators | The five phases you move the room through by clicking tabs: Empathy Maps, Parking Lot, Reflections, Practice Proposals, and Commitments. |
+| [Facilitator tools — room controls beyond boards](#layer-facilitator-tools) | Facilitators | Utilities in the header bar for running the session: show a QR code so phones can join, display the current prompt full-screen on the projector, pace the agenda with the timer, and open settings to edit personas, reclassify stickies, print a PDF, or wipe test data. |
+| [Participant board flows — what phones show per phase](#layer-participant-boards) | Facilitators, participants | The submission experience on a phone for each workshop phase. |
+| [Participant overlays — modals and parking shortcut](#layer-participant-overlays) | Participants, facilitators | Pop-ups and shortcuts on the phone that sit above the active board. |
+| [Cross-role sync — how projector and phones stay aligned](#layer-cross-role) | Facilitators, tech setup | The behind-the-scenes contract between devices. |
 
 ## overview
 
@@ -114,8 +110,6 @@ flowchart TD
   part_parking_overlay -->|"Close or Back to workshop after success"| participant_shell
 ```
 
-
-
 ## layer-url
 
 **URL & bootstrap — how to open the app**
@@ -151,8 +145,6 @@ flowchart TD
   fac_lock_displaced -->|"Take it back"| facilitator_shell
   fac_lock_displaced -->|"Exit"| landing
 ```
-
-
 
 ## layer-top-level
 
@@ -231,8 +223,6 @@ flowchart TD
   fac_qr_panel -->|"Participant scans QR (?role=participant)"| participant_shell
 ```
 
-
-
 ## layer-facilitator-boards
 
 **Facilitator boards — workshop agenda on the projector**
@@ -261,8 +251,6 @@ stateDiagram-v2
     fac_board_empathy_focus --> fac_board_empathy_grid: Gallery (8)
   }
 ```
-
-
 
 ## layer-facilitator-tools
 
@@ -306,8 +294,6 @@ flowchart TD
   fac_qr_panel -->|"Participant scans QR (?role=participant)"| participant_shell
 ```
 
-
-
 ## layer-participant-boards
 
 **Participant board flows — what phones show per phase**
@@ -342,8 +328,6 @@ stateDiagram-v2
   part_practices_column --> part_practices_write: Select column
   part_practices_write --> part_practices_column: Header Back
 ```
-
-
 
 ## layer-participant-overlays
 
@@ -387,8 +371,6 @@ flowchart TD
   part_parking_overlay -->|"Close or Back to workshop after success"| participant_shell
 ```
 
-
-
 ## layer-cross-role
 
 **Cross-role sync — how projector and phones stay aligned**
@@ -402,34 +384,21 @@ The behind-the-scenes contract between devices. No URLs change when the facilita
 ```mermaid
 sequenceDiagram
   %% Facilitator ↔ participant sync
-  %% sync-active-board: Participant main content switches between board flows; participant cannot change board
-  participant Facilitator
-  participant Storage
-  participant Participant
-  Facilitator->>Storage: set acc-active-board
-  Participant->>Storage: poll
-  Storage-->>Participant: Participant main content switches between board flows; participant cannot change board
-
-  %% sync-stickies: Facilitator board views update with new stickies
-  participant Participant
-  participant Storage
-  participant Facilitator
-  Participant->>Storage: append acc-stickies-empathy, acc-stickies-parking-lot, acc-stickies-reflections, acc-stickies-practices, acc-stickies-commitments
-  Facilitator->>Storage: poll
-  Storage-->>Facilitator: Facilitator board views update with new stickies
-
-  %% sync-personas: Participant persona picker reflects facilitator edits
-  participant Facilitator
-  participant Storage
-  participant Participant
-  Facilitator->>Storage: set acc-personas
-  Participant->>Storage: poll
-  Storage-->>Participant: Participant persona picker reflects facilitator edits
-
-  %% sync-facilitator-lock: Only one active facilitator session per room
-  participant Facilitator
-  Facilitator->>Facilitator: Heartbeat every 5s; stale after 15s (acc-facilitator-lock)
+  participant F as Facilitator
+  participant S as Storage
+  participant P as Phone
+  %% sync-active-board
+  F->>S: write acc-active-board
+  P->>S: poll
+  S-->>P: Phone main content switches between board flows
+  %% sync-stickies
+  P->>S: append sticky
+  F->>S: poll
+  S-->>F: Projector board views update with new stickies
+  %% sync-personas
+  F->>S: write acc-personas
+  P->>S: poll
+  S-->>P: Phone persona picker reflects facilitator edits
+  %% sync-facilitator-lock
+  Note over F: Heartbeat every 5s (acc-facilitator-lock)
 ```
-
-
-

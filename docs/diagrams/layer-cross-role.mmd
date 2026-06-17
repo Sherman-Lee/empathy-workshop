@@ -1,29 +1,19 @@
 sequenceDiagram
   %% Facilitator ↔ participant sync
-  %% sync-active-board: Participant main content switches between board flows; participant cannot change board
-  participant Facilitator
-  participant Storage
-  participant Participant
-  Facilitator->>Storage: set acc-active-board
-  Participant->>Storage: poll
-  Storage-->>Participant: Participant main content switches between board flows; participant cannot change board
-
-  %% sync-stickies: Facilitator board views update with new stickies
-  participant Participant
-  participant Storage
-  participant Facilitator
-  Participant->>Storage: append acc-stickies-empathy, acc-stickies-parking-lot, acc-stickies-reflections, acc-stickies-practices, acc-stickies-commitments
-  Facilitator->>Storage: poll
-  Storage-->>Facilitator: Facilitator board views update with new stickies
-
-  %% sync-personas: Participant persona picker reflects facilitator edits
-  participant Facilitator
-  participant Storage
-  participant Participant
-  Facilitator->>Storage: set acc-personas
-  Participant->>Storage: poll
-  Storage-->>Participant: Participant persona picker reflects facilitator edits
-
-  %% sync-facilitator-lock: Only one active facilitator session per room
-  participant Facilitator
-  Facilitator->>Facilitator: Heartbeat every 5s; stale after 15s (acc-facilitator-lock)
+  participant F as Facilitator
+  participant S as Storage
+  participant P as Phone
+  %% sync-active-board
+  F->>S: write acc-active-board
+  P->>S: poll
+  S-->>P: Phone main content switches between board flows
+  %% sync-stickies
+  P->>S: append sticky
+  F->>S: poll
+  S-->>F: Projector board views update with new stickies
+  %% sync-personas
+  F->>S: write acc-personas
+  P->>S: poll
+  S-->>P: Phone persona picker reflects facilitator edits
+  %% sync-facilitator-lock
+  Note over F: Heartbeat every 5s (acc-facilitator-lock)

@@ -575,6 +575,6 @@
     "topLevelFlow": "flowchart TD\n  EP[\"/\"] --> L[Landing]\n  EP -->|\"?role=participant\"| P[Participant shell]\n  EP -->|\"?role=facilitator\"| F[Facilitator shell]\n  PREV[\"/preview\"] --> PV[Preview canvas]\n  L -->|Participant| P\n  L -->|Facilitator| F\n  F -->|Exit| L",
     "facilitatorBoards": "stateDiagram-v2\n  [*] --> Empathy\n  Empathy --> Parking: tab\n  Parking --> Reflections: tab\n  Reflections --> Practices: tab\n  Practices --> Commitments: tab\n  state Empathy {\n    [*] --> Gallery\n    Gallery --> Focus: click persona\n    Focus --> Gallery: Gallery toggle\n  }",
     "participantEmpathy": "stateDiagram-v2\n  [*] --> PickPersona\n  PickPersona --> Compose: select persona\n  Compose --> PickPersona: header back\n  PickPersona --> Sample: see example\n  Sample --> PickPersona: close\n  Compose --> Posted: submit\n  Posted --> Compose: add another\n  Posted --> PickPersona: switch person",
-    "crossRoleSync": "sequenceDiagram\n  participant F as Facilitator\n  participant S as Storage\n  participant P as Participant\n  F->>S: set acc-active-board\n  P->>S: poll (3s)\n  S-->>P: active board id\n  P->>P: switch board flow\n  P->>S: append sticky\n  F->>S: poll (3s)\n  S-->>F: updated stickies"
+    "crossRoleSync": "sequenceDiagram\n  participant F as Facilitator\n  participant S as Storage\n  participant P as Phone\n  F->>S: write acc-active-board\n  P->>S: poll\n  S-->>P: board flow switches\n  P->>S: append sticky\n  F->>S: poll\n  S-->>F: stickies update"
   }
 }

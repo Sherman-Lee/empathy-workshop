@@ -252,49 +252,49 @@ function renderStateDiagram(title, nodeIds, edges, nodeMap, layerId) {
   return lines.join("\n");
 }
 
+function sequenceMessage(text) {
+  return escapeLabel(
+    String(text)
+      .split(";")[0]
+      .trim()
+      .replace(/^Participant\b/i, "Phone")
+      .replace(/^Facilitator\b/i, "Projector"),
+  );
+}
+
 function renderSequenceDiagram(title, syncLinks) {
   const lines = ["sequenceDiagram"];
   lines.push(`  %% ${title}`);
-
-  const actorNames = {
-    facilitator: "Facilitator",
-    participant: "Participant",
-    storage: "Storage",
-  };
+  lines.push("  participant F as Facilitator");
+  lines.push("  participant S as Storage");
+  lines.push("  participant P as Phone");
 
   for (const link of syncLinks) {
-    lines.push(`  %% ${link.id}: ${link.effect}`);
-    const driver = actorNames[link.driver] || link.driver;
-    const follower = actorNames[link.follower] || link.follower;
+    lines.push(`  %% ${link.id}`);
+
+    const key = link.storageKey || (link.storageKeys && link.storageKeys.join(", ")) || link.id;
+    const effect = sequenceMessage(link.effect);
 
     if (link.driver === link.follower) {
-      lines.push(`  participant ${driver}`);
-      const key = link.storageKey || (link.storageKeys && link.storageKeys[0]) || link.id;
-      lines.push(`  ${driver}->>${driver}: ${escapeLabel(link.mechanism)} (${key})`);
+      lines.push(`  Note over F: ${sequenceMessage(link.mechanism)} (${key})`);
       continue;
     }
 
-    lines.push(`  participant ${driver}`);
-    lines.push(`  participant Storage`);
-    lines.push(`  participant ${follower}`);
-
-    const key = link.storageKey || (link.storageKeys && link.storageKeys.join(", ")) || link.id;
     if (link.direction === "facilitator-to-participant") {
-      lines.push(`  ${driver}->>Storage: set ${key}`);
-      lines.push(`  ${follower}->>Storage: poll`);
-      lines.push(`  Storage-->>${follower}: ${escapeLabel(link.effect)}`);
+      lines.push(`  F->>S: write ${key}`);
+      lines.push(`  P->>S: poll`);
+      lines.push(`  S-->>P: ${effect}`);
     } else if (link.direction === "participant-to-facilitator") {
-      lines.push(`  ${driver}->>Storage: append ${key}`);
-      lines.push(`  ${follower}->>Storage: poll`);
-      lines.push(`  Storage-->>${follower}: ${escapeLabel(link.effect)}`);
+      lines.push(`  P->>S: append sticky`);
+      lines.push(`  F->>S: poll`);
+      lines.push(`  S-->>F: ${effect}`);
     } else {
-      lines.push(`  Note over ${driver},${follower}: ${escapeLabel(link.mechanism)}`);
-      lines.push(`  ${follower}->>Storage: read ${key}`);
+      lines.push(`  Note over P: ${sequenceMessage(link.mechanism)}`);
+      lines.push(`  P->>S: read ${key}`);
     }
-    lines.push("");
   }
 
-  return lines.join("\n").trimEnd();
+  return lines.join("\n");
 }
 
 function renderLayer(layer, seed, nodeMap) {
